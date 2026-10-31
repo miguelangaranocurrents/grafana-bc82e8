@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { type DataFrame, type TimeRange } from '@grafana/data';
+import { LegendDisplayMode } from '@grafana/schema';
 import { useTheme2 } from '@grafana/ui';
 import { hasVisibleLegendSeries, PlotLegend, type UPlotConfigBuilder } from '@grafana/ui/internal';
 import { type TimeSeriesLegendOptions } from 'app/plugins/panel/timeseries/panelcfg.gen';
@@ -41,7 +42,10 @@ export function TimeSeries(props: TimeSeriesProps) {
 
   const renderLegend = useCallback(
     (uPlotConfig: UPlotConfigBuilder) => {
-      if (!uPlotConfig || (legend && !legend.showLegend) || !hasVisibleLegendSeries(uPlotConfig, frames)) {
+      // displayMode "hidden" is the deprecated way of hiding the legend. Rendering an empty legend would
+      // make VizLayout wait for a non-zero legend height before drawing the plot.
+      const legendHidden = legend && (!legend.showLegend || legend.displayMode === LegendDisplayMode.Hidden);
+      if (!uPlotConfig || legendHidden || !hasVisibleLegendSeries(uPlotConfig, frames)) {
         return null;
       }
 
